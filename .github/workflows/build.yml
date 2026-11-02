@@ -1,3 +1,4 @@
+
 name: Build TripReader APK
 
 on:
@@ -26,6 +27,23 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
+
+      - name: Fix Java and Kotlin targets
+        run: |
+          python3 - <<'PY'
+          p = 'tmp/TripReaderAndroid/app/build.gradle'
+          s = open(p).read()
+          s = s.replace(
+              '    buildFeatures { viewBinding true }',
+              """    compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions { jvmTarget = '17' }
+              buildFeatures { viewBinding true }"""
+          )
+          open(p, 'w').write(s)
+          PY
 
       - name: Build APK
         run: |
